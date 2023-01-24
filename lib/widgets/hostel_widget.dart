@@ -6,6 +6,7 @@ import 'package:hostel_booking_application/services/shared_service.dart';
 import 'package:hostel_booking_application/utilities/themes.dart';
 import 'package:provider/provider.dart';
 
+import '../Utilities/snackbars.dart';
 import '../pages/hostel_detail_page.dart';
 // import 'package:room_finder/pages/rent_floor_detail_page.dart';
 
@@ -77,7 +78,12 @@ class HostelWidget extends StatelessWidget {
                             EmailService.sendInquiryEmail(
                               hostelOwnerName: hostel.ownerName,
                               hostelOwnerEmail: hostel.ownerEmail,
-                            );
+                            ).then((value) {
+                              SnackBars.showNormalSnackbar(
+                                context,
+                                'Hostel Owner has been notified. You will soon receive a call.',
+                              );
+                            });
                           },
                           icon: const Icon(
                             Icons.notifications,
