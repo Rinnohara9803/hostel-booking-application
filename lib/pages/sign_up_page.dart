@@ -223,7 +223,19 @@ class _SignUpPageState extends State<SignUpPage> {
                       border: Border.all(
                         color: Colors.black,
                       ),
-                      color: const Color.fromARGB(255, 209, 237, 242),
+                      // color: ThemeClass.primaryColor.withOpacity(
+                      //   0.3,
+                      // ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.blueAccent,
+                          ThemeClass.primaryColor.withOpacity(
+                            0.5,
+                          ),
+                        ],
+                      ),
                       borderRadius: BorderRadius.circular(
                         15,
                       ),
@@ -242,7 +254,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                     MediaQuery.of(context).devicePixelRatio *
                                         20,
                                 child: CircleAvatar(
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: Colors.white70,
                                   radius:
                                       MediaQuery.of(context).devicePixelRatio *
                                           19,

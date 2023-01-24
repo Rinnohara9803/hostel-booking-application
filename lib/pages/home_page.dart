@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hostel_booking_application/pages/search_by_address_page.dart';
-import 'package:hostel_booking_application/pages/search_page.dart';
 import 'package:hostel_booking_application/providers/hostels_provider.dart';
 import 'package:hostel_booking_application/providers/the_hostel.dart';
 import 'package:hostel_booking_application/utilities/themes.dart';
 import 'package:provider/provider.dart';
-
-import '../services/shared_service.dart';
 import '../widgets/hostel_widget.dart';
 
 class HomePage extends StatefulWidget {
@@ -45,12 +42,12 @@ class _HomePageState extends State<HomePage>
                     right: 20,
                   ),
                   margin: const EdgeInsets.only(
-                    left: 10,
-                    right: 10,
+                    left: 5,
+                    right: 5,
                   ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(
-                      25,
+                      7,
                     ),
                     color: ThemeClass.primaryColor.withOpacity(
                       0.4,

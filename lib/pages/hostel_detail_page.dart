@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hostel_booking_application/models/review.dart';
+import 'package:hostel_booking_application/pages/ratings_and_reviews_page.dart';
 import 'package:hostel_booking_application/providers/hostels_provider.dart';
 import 'package:hostel_booking_application/providers/the_hostel.dart';
 import 'package:hostel_booking_application/utilities/snackbars.dart';
@@ -83,15 +84,6 @@ class _HostelDetailPageState extends State<HostelDetailPage> {
 
     return SafeArea(
       child: Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
-        floatingActionButton: FloatingActionButton.small(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Icon(
-            Icons.arrow_back,
-          ),
-        ),
         body: FutureBuilder(
           future: Provider.of<HostelsProvider>(context, listen: false)
               .fetchHostelDetailsById(hostel.id),
@@ -783,7 +775,17 @@ class _HostelDetailPageState extends State<HostelDetailPage> {
                                             MainAxisAlignment.end,
                                         children: [
                                           TextButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      RatingsAndReviewsPage(
+                                                    reviews: hostel.reviews,
+                                                  ),
+                                                ),
+                                              );
+                                            },
                                             child: const Text('See more ...'),
                                           ),
                                         ],

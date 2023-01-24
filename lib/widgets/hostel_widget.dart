@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hostel_booking_application/providers/the_hostel.dart';
 import 'package:hostel_booking_application/services/apis/notifications_api.dart';
+import 'package:hostel_booking_application/services/email_service.dart';
 import 'package:hostel_booking_application/services/shared_service.dart';
 import 'package:hostel_booking_application/utilities/themes.dart';
 import 'package:provider/provider.dart';
@@ -72,6 +73,10 @@ class HostelWidget extends StatelessWidget {
                               'Hostel Inquiry',
                               '${SharedService.contact} has inquired for your hostel.',
                               hostel.ownerId,
+                            );
+                            EmailService.sendInquiryEmail(
+                              hostelOwnerName: hostel.ownerName,
+                              hostelOwnerEmail: hostel.ownerEmail,
                             );
                           },
                           icon: const Icon(

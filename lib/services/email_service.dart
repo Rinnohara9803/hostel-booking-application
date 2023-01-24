@@ -6,43 +6,6 @@ import 'package:hostel_booking_application/services/shared_service.dart';
 import 'package:http/http.dart' as http;
 
 class EmailService {
-  static Future<void> sendOtp(String email) async {
-    EmailOTP myauth = EmailOTP();
-
-    myauth.setConfig(
-      appEmail: "hostelbookingapplication9803@gmail.com",
-      appName: "Email OTP",
-      userEmail: email,
-      otpLength: 6,
-      otpType: OTPType.digitsOnly,
-    );
-    try {
-      await myauth.sendOTP();
-    } catch (e) {
-      return Future.error(e.toString());
-    }
-  }
-
-  static Future<void> verifyOtp(String email, String otp) async {
-    EmailOTP myauth = EmailOTP();
-
-    myauth.setConfig(
-      appEmail: "hostelbookingapplication9803@gmail.com",
-      appName: "Email OTP",
-      userEmail: email,
-      otpLength: 6,
-      otpType: OTPType.digitsOnly,
-    );
-    try {
-      if (await myauth.verifyOTP(otp: otp) == true) {
-      } else {
-        return Future.error('Otp validation failed!');
-      }
-    } catch (e) {
-      return Future.error('Otp validation failed!');
-    }
-  }
-
   static Future<void> sendEmail({
     required String name,
     required String email,
@@ -80,6 +43,45 @@ class EmailService {
       )
           .then((value) {
         SharedService.otp = otp.toString();
+      });
+    } catch (e) {
+      return Future.error(e.toString());
+    }
+  }
+
+  static Future<void> sendInquiryEmail({
+    required String hostelOwnerName,
+    required String hostelOwnerEmail,
+  }) async {
+    try {
+      const serviceId = 'service_lvigzir';
+      const templateId = 'template_1xtfdug';
+      const userId = '4fBfKASEVUpxuj995';
+      final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+      await http
+          .post(
+        url,
+        headers: {
+          'origin': 'http://localhost',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(
+          {
+            'service_id': serviceId,
+            'template_id': templateId,
+            'user_id': userId,
+            'template_params': {
+              'user_subject': 'Hostel Inquiry',
+              'to_hostelowner': hostelOwnerName,
+              'inquiry_by': SharedService.userName,
+              'inquiry_by_contact': SharedService.contact,
+              'to_email': hostelOwnerEmail,
+              'user_email': SharedService.email,
+            },
+          },
+        ),
+      )
+          .then((value) {
       });
     } catch (e) {
       return Future.error(e.toString());
