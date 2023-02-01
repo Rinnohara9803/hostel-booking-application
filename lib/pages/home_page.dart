@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hostel_booking_application/pages/search_by_address_page.dart';
 import 'package:hostel_booking_application/providers/hostels_provider.dart';
 import 'package:hostel_booking_application/providers/the_hostel.dart';
 import 'package:hostel_booking_application/utilities/themes.dart';
 import 'package:provider/provider.dart';
+import '../repositories/google_maps_repository.dart';
 import '../widgets/hostel_widget.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,6 +20,14 @@ class _HomePageState extends State<HomePage>
   @override
   bool get wantKeepAlive => true;
   final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+
+  @override
+  void initState() {
+    // -- determines your location
+
+    GoogleMapsRepository.determinePosition();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +74,7 @@ class _HomePageState extends State<HomePage>
                       ),
                     ],
                   ),
-                ),
+                ).animate().slideX(),
               ),
               const SizedBox(
                 height: 5,

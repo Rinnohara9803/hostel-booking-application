@@ -193,6 +193,8 @@ class HostelsProvider with ChangeNotifier {
         'parkingForCar': theHostel.parkingForCar,
         'parkingForMotorcycle': theHostel.parkingForMotorcycle,
         'internetAvailability': theHostel.internetAvailability,
+        'latitude': theHostel.latitude,
+        'longitude': theHostel.longitude,
         'reviews': [],
       });
       _myHostels.add(theHostel);
@@ -252,6 +254,8 @@ class HostelsProvider with ChangeNotifier {
               parkingForCar: hostel.data()['parkingForCar'],
               parkingForMotorcycle: hostel.data()['parkingForMotorcycle'],
               internetAvailability: hostel.data()['internetAvailability'],
+              latitude: double.parse(hostel.data()['latitude'].toString()),
+              longitude: double.parse(hostel.data()['longitude'].toString()),
               reviews: theReviews,
             ),
           );
@@ -342,6 +346,8 @@ class HostelsProvider with ChangeNotifier {
               parkingForCar: hostel.data()['parkingForCar'],
               parkingForMotorcycle: hostel.data()['parkingForMotorcycle'],
               internetAvailability: hostel.data()['internetAvailability'],
+              latitude: double.parse(hostel.data()['latitude'].toString()),
+              longitude: double.parse(hostel.data()['longitude'].toString()),
               reviews: theReviews,
             ),
           );
@@ -408,6 +414,8 @@ class HostelsProvider with ChangeNotifier {
           parkingForCar: data['parkingForCar'],
           parkingForMotorcycle: data['parkingForMotorcycle'],
           internetAvailability: data['internetAvailability'],
+          latitude: double.parse(data['latitude'].toString()),
+          longitude: double.parse(data['longitude'].toString()),
           reviews: theReviews,
         );
       });

@@ -87,9 +87,9 @@ class HostelOwnerWidget extends StatelessWidget {
                     : () {
                         _launchPhoneURL(hostelContact);
                       },
-                child: const Icon(
+                child: Icon(
                   Icons.phone,
-                  color: Colors.greenAccent,
+                  color: ThemeClass.primaryColor,
                 ),
               ),
               const SizedBox(

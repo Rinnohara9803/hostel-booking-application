@@ -1,13 +1,15 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hostel_booking_application/providers/hostels_provider.dart';
 import 'package:hostel_booking_application/utilities/themes.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hostel_booking_application/Utilities/snackbars.dart';
 import 'package:provider/provider.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../providers/the_hostel.dart';
 import '../services/shared_service.dart';
 import '../widgets/image_view_widget.dart';
@@ -37,8 +39,8 @@ class _AddYourHostelState extends State<AddYourHostel>
   String _parkingForCar = '';
   String _parkingForMotorcycle = '';
   String _internetAvailability = '';
-  // double _latitude = SharedService.currentPosition.latitude;
-  // double _longitude = SharedService.currentPosition.longitude;
+  double _latitude = SharedService.currentPosition.latitude;
+  double _longitude = SharedService.currentPosition.longitude;
 
   final List<String> answers = ['Yes', 'No'];
   final List<String> _paymentMethods = ['Hand Cash', 'Online Payment'];
@@ -162,6 +164,8 @@ class _AddYourHostelState extends State<AddYourHostel>
           parkingForCar: _parkingForCar,
           parkingForMotorcycle: _parkingForMotorcycle,
           internetAvailability: _internetAvailability,
+          latitude: _latitude,
+          longitude: _longitude,
           reviews: [],
         );
         await Provider.of<HostelsProvider>(context, listen: false)
@@ -191,6 +195,59 @@ class _AddYourHostelState extends State<AddYourHostel>
   }
 
   final _scrollController = ScrollController();
+
+  late GoogleMapController _googleMapController;
+
+  final Marker _locationMarker = Marker(
+    markerId: const MarkerId('rino'),
+    infoWindow: const InfoWindow(
+      title: 'CurrentLocation',
+    ),
+    icon: BitmapDescriptor.defaultMarkerWithHue(
+      BitmapDescriptor.hueBlue,
+    ),
+    position: LatLng(SharedService.currentPosition.latitude,
+        SharedService.currentPosition.longitude),
+  );
+
+  Marker getCurrentMarker(double lat, double long) {
+    return Marker(
+      markerId: const MarkerId('rino1'),
+      infoWindow: const InfoWindow(
+        title: 'Hostel Location',
+      ),
+      icon: BitmapDescriptor.defaultMarkerWithHue(
+        BitmapDescriptor.hueRed,
+      ),
+      position: LatLng(
+        lat,
+        long,
+      ),
+    );
+  }
+
+  final _cameraPosition = CameraPosition(
+    target: LatLng(
+      SharedService.currentPosition.latitude,
+      SharedService.currentPosition.longitude,
+    ),
+    zoom: 12.5,
+    tilt: 0,
+  );
+  final List<Marker> _markers = [];
+
+  @override
+  void initState() {
+    _markers.add(_locationMarker);
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _googleMapController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -300,7 +357,6 @@ class _AddYourHostelState extends State<AddYourHostel>
                             _address = value!;
                           },
                         ),
-
                         TextFormField(
                           key: const ValueKey('Amount/month'),
                           decoration: const InputDecoration(
@@ -455,79 +511,83 @@ class _AddYourHostelState extends State<AddYourHostel>
                         const SizedBox(
                           height: 10,
                         ),
-                        // Stack(
-                        //   children: [
-                        //     SizedBox(
-                        //       height: 350,
-                        //       width: double.infinity,
-                        //       child: GoogleMap(
-                        //         gestureRecognizers:
-                        //             // ignore: prefer_collection_literals
-                        //             <Factory<OneSequenceGestureRecognizer>>[
-                        //           Factory<OneSequenceGestureRecognizer>(
-                        //             () => EagerGestureRecognizer(),
-                        //           ),
-                        //         ].toSet(),
-                        //         onTap: (latLng) {
-                        //           setState(() {
-                        //             if (_markers.length > 1) {
-                        //               _markers.removeLast();
-                        //               _latitude = latLng.latitude;
-                        //               _longitude = latLng.longitude;
-                        //               _markers.add(
-                        //                 getCurrentMarker(
-                        //                   latLng.latitude,
-                        //                   latLng.longitude,
-                        //                 ),
-                        //               );
-                        //             } else {
-                        //               _latitude = latLng.latitude;
-                        //               _longitude = latLng.longitude;
-                        //               _markers.add(
-                        //                 getCurrentMarker(
-                        //                   latLng.latitude,
-                        //                   latLng.longitude,
-                        //                 ),
-                        //               );
-                        //             }
-                        //           });
-                        //         },
-                        //         mapType: MapType.normal,
-                        //         markers: _markers.map((e) => e).toSet(),
-                        //         initialCameraPosition: _cameraPosition,
-                        //         onMapCreated: (controller) =>
-                        //             _googleMapController = controller,
-                        //       ),
-                        //     ),
-                        //     Positioned(
-                        //       right: 10,
-                        //       top: 10,
-                        //       child: IconButton(
-                        //         color: ThemeClass.primaryColor,
-                        //         onPressed: () {
-                        //           _googleMapController.animateCamera(
-                        //             CameraUpdate.newCameraPosition(
-                        //               CameraPosition(
-                        //                 target: LatLng(
-                        //                   SharedService
-                        //                       .currentPosition.latitude,
-                        //                   SharedService
-                        //                       .currentPosition.longitude,
-                        //                 ),
-                        //                 zoom: 15.5,
-                        //                 tilt: 50,
-                        //               ),
-                        //             ),
-                        //           );
-                        //         },
-                        //         icon: const Icon(
-                        //           Icons.location_on_outlined,
-                        //           size: 35,
-                        //         ),
-                        //       ),
-                        //     )
-                        //   ],
-                        // ),
+                        Stack(
+                          children: [
+                            SizedBox(
+                              height: 350,
+                              width: double.infinity,
+                              child: GoogleMap(
+                                gestureRecognizers:
+                                    // ignore: prefer_collection_literals
+                                    <Factory<OneSequenceGestureRecognizer>>[
+                                  Factory<OneSequenceGestureRecognizer>(
+                                    () => EagerGestureRecognizer(),
+                                  ),
+                                ].toSet(),
+                                onTap: (latLng) {
+                                  setState(() {
+                                    if (_markers.length > 1) {
+                                      _markers.removeLast();
+                                      _latitude = latLng.latitude;
+                                      _longitude = latLng.longitude;
+                                      print(_latitude);
+                                      print(_longitude);
+                                      _markers.add(
+                                        getCurrentMarker(
+                                          latLng.latitude,
+                                          latLng.longitude,
+                                        ),
+                                      );
+                                    } else {
+                                      _latitude = latLng.latitude;
+                                      _longitude = latLng.longitude;
+                                      print(_latitude);
+                                      print(_longitude);
+                                      _markers.add(
+                                        getCurrentMarker(
+                                          latLng.latitude,
+                                          latLng.longitude,
+                                        ),
+                                      );
+                                    }
+                                  });
+                                },
+                                mapType: MapType.normal,
+                                markers: _markers.map((e) => e).toSet(),
+                                initialCameraPosition: _cameraPosition,
+                                onMapCreated: (controller) =>
+                                    _googleMapController = controller,
+                              ),
+                            ),
+                            Positioned(
+                              right: 10,
+                              top: 10,
+                              child: IconButton(
+                                color: ThemeClass.primaryColor,
+                                onPressed: () {
+                                  _googleMapController.animateCamera(
+                                    CameraUpdate.newCameraPosition(
+                                      CameraPosition(
+                                        target: LatLng(
+                                          SharedService
+                                              .currentPosition.latitude,
+                                          SharedService
+                                              .currentPosition.longitude,
+                                        ),
+                                        zoom: 15.5,
+                                        tilt: 50,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.location_on_outlined,
+                                  size: 35,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                         DropdownButtonFormField(
                           decoration: const InputDecoration(
                             label: Text(

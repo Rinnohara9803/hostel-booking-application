@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hostel_booking_application/pages/add_your_hostel_page.dart';
 import 'package:hostel_booking_application/pages/edit_profile_page.dart';
 import 'package:hostel_booking_application/pages/forgot_password_page.dart';
+import 'package:hostel_booking_application/pages/hostel_map_page.dart';
 import 'package:hostel_booking_application/pages/manage_your_hostel.dart';
 import 'package:hostel_booking_application/pages/search_by_address_page.dart';
 import 'package:hostel_booking_application/pages/search_page.dart';
@@ -107,6 +108,7 @@ class MyApp extends StatelessWidget {
           SearchPage.routeName: (context) => const SearchPage(),
           SearchPageByAddress.routeName: (context) =>
               const SearchPageByAddress(),
+          HostelMapPage.routeName: (context) => const HostelMapPage(),
         },
       ),
     );

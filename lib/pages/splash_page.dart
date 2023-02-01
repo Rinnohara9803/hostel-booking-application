@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hostel_booking_application/main.dart';
 import 'package:hostel_booking_application/pages/sign_in_page.dart';
@@ -28,7 +29,7 @@ class _SplashPageState extends State<SplashPage> {
   final user = FirebaseAuth.instance.currentUser;
   @override
   void initState() {
-    Future.delayed(const Duration(seconds: 0), () {
+    Future.delayed(const Duration(milliseconds: 1800), () {
       fetchUser();
     });
     super.initState();
@@ -175,7 +176,22 @@ class _SplashPageState extends State<SplashPage> {
                 'images/hostel.png',
                 height: 130,
                 width: 130,
-              ),
+              )
+                  .animate()
+                  .shimmer(
+                    delay: 400.ms,
+                    duration: 1800.ms,
+                  )
+                  .shake(
+                    hz: 4,
+                    curve: Curves.easeIn,
+                  )
+                  .scaleXY(
+                    end: 1.1,
+                    duration: 600.ms,
+                  )
+                  .then(delay: 600.ms)
+                  .scaleXY(end: 1 / 1.1),
               const SizedBox(
                 height: 10,
               ),

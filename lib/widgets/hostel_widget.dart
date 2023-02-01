@@ -5,10 +5,9 @@ import 'package:hostel_booking_application/services/email_service.dart';
 import 'package:hostel_booking_application/services/shared_service.dart';
 import 'package:hostel_booking_application/utilities/themes.dart';
 import 'package:provider/provider.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 import '../Utilities/snackbars.dart';
 import '../pages/hostel_detail_page.dart';
-// import 'package:room_finder/pages/rent_floor_detail_page.dart';
 
 class HostelWidget extends StatelessWidget {
   const HostelWidget({
@@ -67,8 +66,12 @@ class HostelWidget extends StatelessWidget {
                     if (SharedService.role == 'User')
                       Positioned(
                         right: 5,
-                        child: IconButton(
-                          color: Colors.amber,
+                        child: ElevatedButton.icon(
+                          style: const ButtonStyle(
+                            backgroundColor:
+                                MaterialStatePropertyAll(Colors.amber),
+                          ),
+                          label: const Text('Book'),
                           onPressed: () {
                             Notifications.notifyHostelOwner(
                               'Hostel Inquiry',
@@ -86,7 +89,7 @@ class HostelWidget extends StatelessWidget {
                             });
                           },
                           icon: const Icon(
-                            Icons.notifications,
+                            Icons.notifications_active,
                           ),
                         ),
                       ),

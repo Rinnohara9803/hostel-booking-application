@@ -25,6 +25,8 @@ class TheHostel with ChangeNotifier {
   String parkingForCar;
   String parkingForMotorcycle;
   String internetAvailability;
+  double latitude;
+  double longitude;
   List<Review> reviews;
 
   TheHostel({
@@ -47,6 +49,8 @@ class TheHostel with ChangeNotifier {
     required this.parkingForCar,
     required this.parkingForMotorcycle,
     required this.internetAvailability,
+    required this.latitude,
+    required this.longitude,
     required this.reviews,
   });
 
@@ -88,8 +92,7 @@ class TheHostel with ChangeNotifier {
 
   Future<void> updateHostelInfo(TheHostel theHostel) async {
     try {
-      await FirebaseFirestore.instance.collection('hostels').doc(id).set({
-        'images': theHostel.images,
+      await FirebaseFirestore.instance.collection('hostels').doc(id).update({
         'id': theHostel.id,
         'ownerName': theHostel.ownerName,
         'ownerEmail': theHostel.ownerEmail,
@@ -108,6 +111,8 @@ class TheHostel with ChangeNotifier {
         'parkingForCar': theHostel.parkingForCar,
         'parkingForMotorcycle': theHostel.parkingForMotorcycle,
         'internetAvailability': theHostel.internetAvailability,
+        'latitude': theHostel.latitude,
+        'longitude': theHostel.longitude,
         'reviews': theHostel.reviews
             .map((review) => {
                   'id': review.id,
@@ -140,6 +145,4 @@ class TheHostel with ChangeNotifier {
       rethrow;
     }
   }
-
-  
 }

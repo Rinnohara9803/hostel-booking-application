@@ -5,6 +5,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hostel_booking_application/models/review.dart';
 import 'package:hostel_booking_application/pages/ratings_and_reviews_page.dart';
 import 'package:hostel_booking_application/providers/hostels_provider.dart';
@@ -15,9 +16,10 @@ import 'package:hostel_booking_application/widgets/hostel_details_shimmer_widget
 import 'package:provider/provider.dart';
 
 import '../services/shared_service.dart';
-import '../widgets/hoste_owner_widget.dart';
+import '../widgets/hostel_owner_widget.dart';
 import '../widgets/image_view_widget.dart';
 import '../widgets/review_widget.dart';
+import 'hostel_map_page.dart';
 
 class HostelDetailPage extends StatefulWidget {
   final String hostelId;
@@ -802,6 +804,24 @@ class _HostelDetailPageState extends State<HostelDetailPage> {
                               hostelEmail: hostel.ownerEmail,
                             ),
                         ],
+                      ),
+                      Positioned(
+                        child: IconButton(
+                          iconSize: 40,
+                          onPressed: () {
+                            Navigator.of(context).pushNamed(
+                              HostelMapPage.routeName,
+                              arguments: LatLng(
+                                hostel.latitude,
+                                hostel.longitude,
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.location_on_outlined,
+                            color: Colors.red,
+                          ),
+                        ),
                       ),
                     ],
                   );

@@ -628,11 +628,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     width: 0.5,
                                   ),
                                 ),
-                                child: const Center(
+                                child:Center(
                                   child: Icon(
                                     Icons.edit,
                                     size: 22,
-                                    color: Colors.green,
+                                    color: ThemeClass.primaryColor,
                                   ),
                                 ),
                               ),

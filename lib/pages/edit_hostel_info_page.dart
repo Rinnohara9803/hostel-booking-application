@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hostel_booking_application/utilities/themes.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hostel_booking_application/Utilities/snackbars.dart';
@@ -83,49 +86,40 @@ class _EditHostelInfoPageState extends State<EditHostelInfoPage> {
     'Lalitpur',
   ];
 
-  List<String> images = [];
-
   final _globalKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
 
-  Future<void> getImageUrls() async {
-    final user = FirebaseAuth.instance.currentUser;
-    final userId = user?.uid;
+  late double _latitude;
+  late double _longitude;
 
-    try {
-      for (var image in _imageFiles) {
-        await FirebaseStorage.instance
-            .ref(
-              'image_file/$userId/${image.name}',
-            )
-            .putFile(File(image.path))
-            .then((p0) {});
+  // Future<void> getImageUrls() async {
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   final userId = user?.uid;
 
-        String imageUrl = await FirebaseStorage.instance
-            .ref('image_file/$userId/${image.name}')
-            .getDownloadURL();
-        images.add(imageUrl);
-      }
-    } catch (e) {
-      SnackBars.showErrorSnackBar(context, e.toString());
-    }
-  }
+  //   try {
+  //     for (var image in _imageFiles) {
+  //       await FirebaseStorage.instance
+  //           .ref(
+  //             'image_file/$userId/${image.name}',
+  //           )
+  //           .putFile(File(image.path))
+  //           .then((p0) {});
+
+  //       String imageUrl = await FirebaseStorage.instance
+  //           .ref('image_file/$userId/${image.name}')
+  //           .getDownloadURL();
+  //       images.add(imageUrl);
+  //     }
+  //   } catch (e) {
+  //     SnackBars.showErrorSnackBar(context, e.toString());
+  //   }
+  // }
 
   Future<void> _onSaved(TheHostel hostel) async {
     if (!_globalKey.currentState!.validate()) {
       SnackBars.showErrorSnackBar(
           context, 'Please fill in all the required fields!!!');
-      return;
-    } else if (_imageFiles.isEmpty) {
-      SnackBars.showErrorSnackBar(context, 'Please choose a photo!!!');
-      return;
-    } else if (_imageFiles.length > 5) {
-      SnackBars.showErrorSnackBar(context, 'You can only chooose 5 images.');
-      return;
-    } else if (_imageFiles.length < 2) {
-      SnackBars.showErrorSnackBar(
-          context, 'You have to choose at least 2 images.');
       return;
     }
 
@@ -138,42 +132,46 @@ class _EditHostelInfoPageState extends State<EditHostelInfoPage> {
     final userId = user?.uid;
 
     try {
-      getImageUrls().then((value) async {
-        TheHostel newHostel = TheHostel(
-          images: images,
-          id: hostel.id,
-          name: _name,
-          ownerName: SharedService.userName,
-          ownerEmail: SharedService.email,
-          city: _city,
-          address: _address,
-          amount: _amountPm,
-          contact: _contact,
-          ownerId: userId as String,
-          preference: _preference,
-          description: _description,
-          availabilityStatus: true,
-          petFriendly: _petFriendly,
-          needToPaySecurityDeposit: _needToPaySecurityDeposit,
-          paymentOptions: _paymentOption,
-          parkingForCar: _parkingForCar,
-          parkingForMotorcycle: _parkingForMotorcycle,
-          internetAvailability: _internetAvailability,
-          reviews: hostel.reviews,
-        );
-        await hostel.updateHostelInfo(newHostel).then((value) {
-          Navigator.of(context).pop();
-          SnackBars.showNormalSnackbar(context, 'Hostel updated successfully.');
+      TheHostel newHostel = TheHostel(
+        images: [],
+        id: hostel.id,
+        name: _name,
+        ownerName: SharedService.userName,
+        ownerEmail: SharedService.email,
+        city: _city,
+        address: _address,
+        amount: _amountPm,
+        contact: _contact,
+        ownerId: userId as String,
+        preference: _preference,
+        description: _description,
+        availabilityStatus: true,
+        petFriendly: _petFriendly,
+        needToPaySecurityDeposit: _needToPaySecurityDeposit,
+        paymentOptions: _paymentOption,
+        parkingForCar: _parkingForCar,
+        parkingForMotorcycle: _parkingForMotorcycle,
+        internetAvailability: _internetAvailability,
+        latitude: _latitude,
+        longitude: _longitude,
+        reviews: hostel.reviews,
+      );
+      print('new hostel');
+      print(newHostel.latitude);
+      print(newHostel.longitude);
 
-          setState(() {
-            _isLoading = false;
-          });
-        }).catchError((e) {
-          setState(() {
-            _isLoading = false;
-          });
-          SnackBars.showErrorSnackBar(context, e.toString());
+      await hostel.updateHostelInfo(newHostel).then((value) {
+        Navigator.of(context, rootNavigator: true).pop();
+        SnackBars.showNormalSnackbar(context, 'Hostel updated successfully.');
+
+        setState(() {
+          _isLoading = false;
         });
+      }).catchError((e) {
+        setState(() {
+          _isLoading = false;
+        });
+        SnackBars.showErrorSnackBar(context, e.toString());
       });
     } on SocketException {
       setState(() {
@@ -190,9 +188,55 @@ class _EditHostelInfoPageState extends State<EditHostelInfoPage> {
 
   final _scrollController = ScrollController();
 
+  late GoogleMapController _googleMapController;
+
+  Marker getCurrentMarker(double lat, double long) {
+    return Marker(
+      markerId: const MarkerId('rino1'),
+      infoWindow: const InfoWindow(
+        title: 'Hostel Location',
+      ),
+      icon: BitmapDescriptor.defaultMarkerWithHue(
+        BitmapDescriptor.hueRed,
+      ),
+      position: LatLng(
+        lat,
+        long,
+      ),
+    );
+  }
+
+  final _cameraPosition = CameraPosition(
+    target: LatLng(
+      SharedService.currentPosition.latitude,
+      SharedService.currentPosition.longitude,
+    ),
+    zoom: 12.5,
+    tilt: 0,
+  );
+  final List<Marker> _markers = [];
+
+  @override
+  void initState() {
+    final hostel = Provider.of<TheHostel>(context, listen: false);
+    _latitude = hostel.latitude;
+    _longitude = hostel.longitude;
+    print(_latitude);
+    print(_longitude);
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _googleMapController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final hostel = Provider.of<TheHostel>(context);
+
     return SafeArea(
       child: Scaffold(
         body: Form(
@@ -309,7 +353,6 @@ class _EditHostelInfoPageState extends State<EditHostelInfoPage> {
                             _address = value!;
                           },
                         ),
-
                         TextFormField(
                           initialValue: hostel.amount.toString(),
                           key: const ValueKey('Amount/month'),
@@ -369,177 +412,85 @@ class _EditHostelInfoPageState extends State<EditHostelInfoPage> {
                           },
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 20,
                         ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Card(
-                          child: Container(
-                            padding: const EdgeInsets.all(
-                              8,
-                            ),
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      showImageChooseOptions();
-                                    },
-                                    child: const Text(
-                                      'Add Images',
-                                    ),
+                        Stack(
+                          children: [
+                            SizedBox(
+                              height: 350,
+                              width: double.infinity,
+                              child: GoogleMap(
+                                gestureRecognizers:
+                                    // ignore: prefer_collection_literals
+                                    <Factory<OneSequenceGestureRecognizer>>[
+                                  Factory<OneSequenceGestureRecognizer>(
+                                    () => EagerGestureRecognizer(),
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                if (_imageFiles.isEmpty)
-                                  const Text(
-                                    'No files chosen!!!',
-                                  ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                if (_imageFiles.isNotEmpty)
-                                  Column(
-                                    children: _imageFiles.map((image) {
-                                      return Container(
-                                        margin: const EdgeInsets.all(
-                                          8,
-                                        ),
-                                        height: 80,
-                                        width: double.infinity,
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: InkWell(
-                                                onTap: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) {
-                                                      return ImageViewWidget(
-                                                        isNetworkImage: false,
-                                                        filePath: image.path,
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                child: Card(
-                                                  elevation: 6,
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                      5,
-                                                    ),
-                                                    child: Image(
-                                                      fit: BoxFit.cover,
-                                                      image: FileImage(
-                                                        File(image.path),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            IconButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  _imageFiles.removeWhere(
-                                                      (imagen) =>
-                                                          imagen == image);
-                                                });
-                                              },
-                                              icon: const Icon(
-                                                Icons.close,
-                                              ),
-                                            )
-                                          ],
+                                ].toSet(),
+                                onTap: (latLng) {
+                                  setState(() {
+                                    if (_markers.length > 1) {
+                                      _markers.removeLast();
+                                      _latitude = latLng.latitude;
+                                      _longitude = latLng.longitude;
+                                      _markers.add(
+                                        getCurrentMarker(
+                                          latLng.latitude,
+                                          latLng.longitude,
                                         ),
                                       );
-                                    }).toList(),
-                                  ),
-                              ],
+                                      print(_latitude);
+                                      print(_longitude);
+                                    } else {
+                                      _latitude = latLng.latitude;
+                                      _longitude = latLng.longitude;
+                                      _markers.add(
+                                        getCurrentMarker(
+                                          latLng.latitude,
+                                          latLng.longitude,
+                                        ),
+                                      );
+                                      print(_latitude);
+                                      print(_longitude);
+                                    }
+                                  });
+                                },
+                                mapType: MapType.normal,
+                                markers: _markers.map((e) => e).toSet(),
+                                initialCameraPosition: _cameraPosition,
+                                onMapCreated: (controller) =>
+                                    _googleMapController = controller,
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              right: 10,
+                              top: 10,
+                              child: IconButton(
+                                color: ThemeClass.primaryColor,
+                                onPressed: () {
+                                  _googleMapController.animateCamera(
+                                    CameraUpdate.newCameraPosition(
+                                      CameraPosition(
+                                        target: LatLng(
+                                          SharedService
+                                              .currentPosition.latitude,
+                                          SharedService
+                                              .currentPosition.longitude,
+                                        ),
+                                        zoom: 15.5,
+                                        tilt: 50,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.location_on_outlined,
+                                  size: 35,
+                                ),
+                              ),
+                            )
+                          ],
                         ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        // Stack(
-                        //   children: [
-                        //     SizedBox(
-                        //       height: 350,
-                        //       width: double.infinity,
-                        //       child: GoogleMap(
-                        //         gestureRecognizers:
-                        //             // ignore: prefer_collection_literals
-                        //             <Factory<OneSequenceGestureRecognizer>>[
-                        //           Factory<OneSequenceGestureRecognizer>(
-                        //             () => EagerGestureRecognizer(),
-                        //           ),
-                        //         ].toSet(),
-                        //         onTap: (latLng) {
-                        //           setState(() {
-                        //             if (_markers.length > 1) {
-                        //               _markers.removeLast();
-                        //               _latitude = latLng.latitude;
-                        //               _longitude = latLng.longitude;
-                        //               _markers.add(
-                        //                 getCurrentMarker(
-                        //                   latLng.latitude,
-                        //                   latLng.longitude,
-                        //                 ),
-                        //               );
-                        //             } else {
-                        //               _latitude = latLng.latitude;
-                        //               _longitude = latLng.longitude;
-                        //               _markers.add(
-                        //                 getCurrentMarker(
-                        //                   latLng.latitude,
-                        //                   latLng.longitude,
-                        //                 ),
-                        //               );
-                        //             }
-                        //           });
-                        //         },
-                        //         mapType: MapType.normal,
-                        //         markers: _markers.map((e) => e).toSet(),
-                        //         initialCameraPosition: _cameraPosition,
-                        //         onMapCreated: (controller) =>
-                        //             _googleMapController = controller,
-                        //       ),
-                        //     ),
-                        //     Positioned(
-                        //       right: 10,
-                        //       top: 10,
-                        //       child: IconButton(
-                        //         color: ThemeClass.primaryColor,
-                        //         onPressed: () {
-                        //           _googleMapController.animateCamera(
-                        //             CameraUpdate.newCameraPosition(
-                        //               CameraPosition(
-                        //                 target: LatLng(
-                        //                   SharedService
-                        //                       .currentPosition.latitude,
-                        //                   SharedService
-                        //                       .currentPosition.longitude,
-                        //                 ),
-                        //                 zoom: 15.5,
-                        //                 tilt: 50,
-                        //               ),
-                        //             ),
-                        //           );
-                        //         },
-                        //         icon: const Icon(
-                        //           Icons.location_on_outlined,
-                        //           size: 35,
-                        //         ),
-                        //       ),
-                        //     )
-                        //   ],
-                        // ),
                         DropdownButtonFormField(
                           value: hostel.petFriendly,
                           decoration: const InputDecoration(
